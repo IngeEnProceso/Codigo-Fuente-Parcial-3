@@ -2,36 +2,32 @@ import pygame
 import random
 import math
 
-# Inicializar Pygame
 pygame.init()
-
-# Tamaño de la pantalla
 ANCHO = 800
 ALTO = 600
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Dispara a las bolas enemigas")
 
-# Colores
+
 BLANCO = (255, 255, 255)
 NEGRO = (0, 0, 0)
 ROJO = (255, 0, 0)
 AZUL = (0, 0, 255)
 
-# Reloj para controlar los FPS
+
 reloj = pygame.time.Clock()
 FPS = 60
 
-# Jugador (bola azul)
+
 jugador_radio = 20
-jugador_x = ANCHO // 2
-jugador_y = ALTO // 2
+jugador_x = ANCHO // 2 # coordenada x del jugador
+jugador_y = ALTO // 2 # coordenada y
 velocidad_jugador = 5
 
-# Lista de balas (cada bala será un diccionario con su posición y velocidad)
-balas = []
 
-# Lista de enemigos (cada enemigo es un diccionario)
-enemigos = []
+balas = [] # diccionario vacio destinado a balas del jugador
+
+enemigos = [] # diccionario vacio destinado a enemigos
 for _ in range(10):
     enemigo_x = random.randint(0, ANCHO)
     enemigo_y = random.randint(0, ALTO)
