@@ -5,148 +5,147 @@ import math
 # Inicializar Pygame
 pygame.init()
 
-# Dimensiones de la pantalla
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Juego de disparos a esferas")
+# Tamaño de la pantalla
+ANCHO = 800
+ALTO = 600
+pantalla = pygame.display.set_mode((ANCHO, ALTO))
+pygame.display.set_caption("Dispara a las bolas enemigas")
 
-# Colores que usaremos
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
+# Colores
+BLANCO = (255, 255, 255)
+NEGRO = (0, 0, 0)
+ROJO = (255, 0, 0)
+AZUL = (0, 0, 255)
 
 # Reloj para controlar los FPS
-clock = pygame.time.Clock()
+reloj = pygame.time.Clock()
 FPS = 60
 
-# Jugador (una bola azul)
-player_radius = 20
-player_x = screen_width // 2
-player_y = screen_height // 2
-player_speed = 5
+# Jugador (bola azul)
+jugador_radio = 20
+jugador_x = ANCHO // 2
+jugador_y = ALTO // 2
+velocidad_jugador = 5
 
-# Lista para guardar los disparos
-bullets = []  # Cada bala será un diccionario con x, y, dx, dy y radio
+# Lista de balas (cada bala será un diccionario con su posición y velocidad)
+balas = []
 
-# Lista para guardar los objetivos (esferas enemigas)
-targets = []  # Cada objetivo será un diccionario con x, y, dx, dy y radio
-
-# Crear objetivos al inicio
+# Lista de enemigos (cada enemigo es un diccionario)
+enemigos = []
 for _ in range(10):
-    # Posición aleatoria lejos del centro (jugador)
-    while True:
-        target_x = random.randint(0, screen_width)
-        target_y = random.randint(0, screen_height)
-        distance = math.hypot(target_x - player_x, target_y - player_y)
-        if distance > 150:
-            break
-    target_dx = random.choice([-2, -1, 1, 2])
-    target_dy = random.choice([-2, -1, 1, 2])
-    target_radius = 15
-    targets.append({"x": target_x, "y": target_y, "dx": target_dx, "dy": target_dy, "radius": target_radius})
+    enemigo_x = random.randint(0, ANCHO)
+    enemigo_y = random.randint(0, ALTO)
+    enemigo_dx = random.choice([-2, -1, 1, 2])
+    enemigo_dy = random.choice([-2, -1, 1, 2])
+    enemigo_radio = 15
+    enemigos.append({
+        "x": enemigo_x,
+        "y": enemigo_y,
+        "dx": enemigo_dx,
+        "dy": enemigo_dy,
+        "radio": enemigo_radio
+    })
 
 # Función para dibujar al jugador
-def draw_player():
-    pygame.draw.circle(screen, BLUE, (player_x, player_y), player_radius)
+def dibujar_jugador():
+    pygame.draw.circle(pantalla, AZUL, (jugador_x, jugador_y), jugador_radio)
 
-# Función para dibujar los objetivos
-def draw_targets():
-    for target in targets:
-        pygame.draw.circle(screen, RED, (int(target["x"]), int(target["y"])), target["radius"])
+# Función para dibujar las balas
+def dibujar_balas():
+    for bala in balas:
+        pygame.draw.circle(pantalla, NEGRO, (int(bala["x"]), int(bala["y"])), bala["radio"])
 
-# Función para dibujar los disparos
-def draw_bullets():
-    for bullet in bullets:
-        pygame.draw.circle(screen, BLACK, (int(bullet["x"]), int(bullet["y"])), bullet["radius"])
+# Función para dibujar los enemigos
+def dibujar_enemigos():
+    for enemigo in enemigos:
+        pygame.draw.circle(pantalla, ROJO, (int(enemigo["x"]), int(enemigo["y"])), enemigo["radio"])
 
-# Función para mover los disparos
-def move_bullets():
-    for bullet in bullets:
-        bullet["x"] += bullet["dx"]
-        bullet["y"] += bullet["dy"]
+# Mover balas
+def mover_balas():
+    for bala in balas:
+        bala["x"] += bala["dx"]
+        bala["y"] += bala["dy"]
 
-# Función para mover los objetivos
-def move_targets():
-    for target in targets:
-        target["x"] += target["dx"]
-        target["y"] += target["dy"]
+# Mover enemigos
+def mover_enemigos():
+    for enemigo in enemigos:
+        enemigo["x"] += enemigo["dx"]
+        enemigo["y"] += enemigo["dy"]
 
-        # Hacer que reboten si tocan los bordes
-        if target["x"] - target["radius"] <= 0 or target["x"] + target["radius"] >= screen_width:
-            target["dx"] *= -1
-        if target["y"] - target["radius"] <= 0 or target["y"] + target["radius"] >= screen_height:
-            target["dy"] *= -1
+        # Rebotan en los bordes
+        if enemigo["x"] - enemigo["radio"] <= 0 or enemigo["x"] + enemigo["radio"] >= ANCHO:
+            enemigo["dx"] *= -1
+        if enemigo["y"] - enemigo["radio"] <= 0 or enemigo["y"] + enemigo["radio"] >= ALTO:
+            enemigo["dy"] *= -1
 
-# Función para verificar colisiones entre balas y objetivos
-def check_collisions():
-    global targets
-    new_targets = []
-    for target in targets:
-        hit = False
-        for bullet in bullets:
-            dist = math.hypot(bullet["x"] - target["x"], bullet["y"] - target["y"])
-            if dist < bullet["radius"] + target["radius"]:
-                hit = True
+# Verificar colisiones entre balas y enemigos
+def verificar_colisiones():
+    global enemigos
+    enemigos_restantes = []
+    for enemigo in enemigos:
+        golpeado = False
+        for bala in balas:
+            distancia = math.hypot(bala["x"] - enemigo["x"], bala["y"] - enemigo["y"])
+            if distancia < bala["radio"] + enemigo["radio"]:
+                golpeado = True
                 break
-        if not hit:
-            new_targets.append(target)
-    return new_targets
+        if not golpeado:
+            enemigos_restantes.append(enemigo)
+    enemigos = enemigos_restantes
 
 # Bucle principal del juego
-running = True
-while running:
-    screen.fill(WHITE)  # Poner fondo blanco
+jugando = True
+while jugando:
+    pantalla.fill(BLANCO)
 
-    # Detectar eventos
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            jugando = False
 
         # Disparo con clic izquierdo
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
-            bullet_speed = 10
-            bullet_dx = bullet_speed * math.cos(angle)
-            bullet_dy = bullet_speed * math.sin(angle)
-            bullets.append({"x": player_x, "y": player_y, "dx": bullet_dx, "dy": bullet_dy, "radius": 8})
+            angulo = math.atan2(mouse_y - jugador_y, mouse_x - jugador_x)
+            velocidad_bala = 10
+            dx = velocidad_bala * math.cos(angulo)
+            dy = velocidad_bala * math.sin(angulo)
+            bala = {
+                "x": jugador_x,
+                "y": jugador_y,
+                "dx": dx,
+                "dy": dy,
+                "radio": 8
+            }
+            balas.append(bala)
 
-    # Movimiento con teclas
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        player_y -= player_speed
-    if keys[pygame.K_s]:
-        player_y += player_speed
-    if keys[pygame.K_a]:
-        player_x -= player_speed
-    if keys[pygame.K_d]:
-        player_x += player_speed
+    # Movimiento del jugador con teclas WASD
+    teclas = pygame.key.get_pressed()
+    if teclas[pygame.K_w]:
+        jugador_y -= velocidad_jugador
+    if teclas[pygame.K_s]:
+        jugador_y += velocidad_jugador
+    if teclas[pygame.K_a]:
+        jugador_x -= velocidad_jugador
+    if teclas[pygame.K_d]:
+        jugador_x += velocidad_jugador
 
-    # Actualizar posiciones
-    move_bullets()
-    move_targets()
+    mover_balas()
+    mover_enemigos()
+    verificar_colisiones()
 
-    # Verificar colisiones
-    targets = check_collisions()
+    dibujar_jugador()
+    dibujar_balas()
+    dibujar_enemigos()
 
-    # Dibujar todo
-    draw_player()
-    draw_bullets()
-    draw_targets()
+    # Si no hay enemigos, mostrar mensaje de victoria
+    if not enemigos:
+        fuente = pygame.font.SysFont(None, 60)
+        texto = fuente.render("¡Ganaste!", True, NEGRO)
+        pantalla.blit(texto, (ANCHO // 2 - 120, ALTO // 2 - 30))
 
-    # Verificar si ganaste
-    if not targets:
-        font = pygame.font.SysFont(None, 60)
-        text = font.render("¡Ganaste!", True, BLACK)
-        screen.blit(text, (screen_width // 2 - 100, screen_height // 2 - 30))
-
-    # Mostrar pantalla actualizada
     pygame.display.update()
-    clock.tick(FPS)
+    reloj.tick(FPS)
 
 pygame.quit()
-
 
 
