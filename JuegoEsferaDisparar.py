@@ -28,7 +28,7 @@ velocidad_jugador = 5
 balas = [] # diccionario vacio destinado a balas del jugador
 
 enemigos = [] # diccionario vacio destinado a enemigos
-for _ in range(10):
+for _ in range(10): # creación de 10 enemigos con sus distintas propiedades
     enemigo_x = random.randint(0, ANCHO)
     enemigo_y = random.randint(0, ALTO)
     enemigo_dx = random.choice([-2, -1, 1, 2])
@@ -56,13 +56,13 @@ def dibujar_enemigos():
     for enemigo in enemigos:
         pygame.draw.circle(pantalla, ROJO, (int(enemigo["x"]), int(enemigo["y"])), enemigo["radio"])
 
-# Mover balas
+# Función para mover las balas
 def mover_balas():
     for bala in balas:
         bala["x"] += bala["dx"]
         bala["y"] += bala["dy"]
 
-# Mover enemigos
+# Función para que los enemigos se muevan
 def mover_enemigos():
     for enemigo in enemigos:
         enemigo["x"] += enemigo["dx"]
